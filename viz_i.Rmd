@@ -28,5 +28,233 @@ weather_df <-
     tmin = tmin / 10,
     tmax = tmax / 10) %>%
   select(name, id, everything())
+
+weather_df
 ```
+
+## Scatterplots!!
+
+Create my first scatterplot ever.
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point()
+```
+
+New approach, same plot: Piping
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point()
+```
+
+Can also add mutate, filter, or select --> can do data manipulation before you make the plot, but all in a row
+
+
+Save and edit a plot object.
+
+```{r}
+weather_plot <-
+  weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax))
+
+weather_plot
+#can treat this like an existing plot that you can add to.
+
+weather_plot + geom_point()
+```
+
+## Advanced scatterplot...
+
+#### Start with the same one and make it fancy
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point() +
+  geom_smooth(se = FALSE)
+```
+
+Smooth curves that run through the middle of the dataset. Helpful to know that `geom_smooth` is additional geometry you can add when you're exploring your data.
+
+
+#### What about the `aes` placement..?
+Can specify some aesthetics within geom_point. It ends up looking the same
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point(aes(color = name)) +
+  geom_smooth()
+```
+Instead of having one line for each `name`, we just have a sinngle blue line that runs through the data. Reason for that is because color is only applied to the scatterplot when it was defined within the `geom_point` argument. 
+
+Be aware that you can define aesthetics in ggplot, which makes it global and will be passed through everything else. 
+
+
+#### Let's facet some things!!
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point() +
+  geom_smooth(se = FALSE) + 
+  facet_grid(. ~ name)
+```
+
+First argument defines rows ~ second argument defines columns.
+Creates three paneled plot with smooth curves. 
+
+
+#### Adjusting the alpha level and the transparency:
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point(alpha = .2) +
+  geom_smooth(se = FALSE, size = 1) + 
+  facet_grid(. ~ name)
+```
+Defining aesthetics related to specific variables
+
+* alpha = .5 > 50% transparency
+  * If you define alpha outside of the aesthetic, meaning not applying it to a variable, you can define it globally by including it in another function (using geom_point like shown here rather than using ggplot function alpha = tmin or something)
+
+#### Let's combine some elements and try a new plot. 
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = date, y = tmax, color = name)) + 
+  geom_point(aes(size = prcp), alpha = 0.5) + 
+  geom_smooth(se = FALSE) +
+  facet_grid(. ~ name)
+```
+
+
+
+## Some small notes
+
+How many geoms have to exist?
+
+You can have whatever geoms you want. 
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_smooth(se = FALSE)
+```
+
+You can use a neat geom!
+
+```{r}
+# Hexagons
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_hex()
+
+# Squares
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_bin2d()
+
+# Like an elevation map
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_density2d() +
+  geom_point(alpha = 0.3)
+
+```
+
+Helpful when you have a plot that shows a LOT of data points and you want to emphasize certain things
+
+
+## Univariate plots
+
+Histograms are really great.
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin)) +
+  geom_histogram()
+```
+
+Can we add color ...
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, color = name)) +
+  geom_histogram()
+
+# Solves position argument (not overlapping)
+weather_df %>% 
+  ggplot(aes(x = tmin, color = name)) +
+  geom_histogram(position = "dodge")
+
+# Filling bars
+weather_df %>% 
+  ggplot(aes(x = tmin, fill = name)) +
+  geom_histogram(position = "dodge")
+
+# Could do one at a time by faceting
+weather_df %>% 
+  ggplot(aes(x = tmin, fill = name)) +
+  geom_histogram() +
+  facet_grid(. ~ name)
+
+# Removing fill argument; don't necessarily need to color whenn faceting
+weather_df %>% 
+  ggplot(aes(x = tmin)) +
+  geom_histogram() +
+  facet_grid(. ~ name)
+```
+
+Use a different geometry if you don't like it / want to compare distributions across levels..
+
+So, let's try a new geometry!
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, fill = name)) +
+  geom_density(alpha = 0.4, adjust = 0.5)
+```
+
+Density = histogram that's been smoothed out around the edges. You do lose a little bit of information. You can make some info come back if you play with the bin width (adjust = 0.5). 
+
+This is just an exploration so no need to be perfect. 
+
+What about boxplots?
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = name, y = tmin)) +
+  geom_boxplot()
+```
+
+
+Trendy plots :-)
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = name, y = tmin, fill = name)) +
+  geom_violin(alpha = 0.5)
+```
+
+But this isn't showing me the median.
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = name, y = tmin, fill = name)) +
+  geom_violin(alpha = 0.5) +
+  stat_summary(fun = "median")
+```
+
+Ridge plots... the most popular plot of 2017
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = name)) +
+  geom_density_ridges()
+```
+
 
