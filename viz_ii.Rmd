@@ -97,7 +97,7 @@ weather_df %>%
 Instead of using hue, use this:
 
 ```{r}
-weather_df %>% 
+ggplot_weather <- weather_df %>% 
   ggplot(aes(x = tmin, y = tmax, color = name)) + 
   geom_point(alpha = 0.5) +
   labs(
@@ -113,3 +113,41 @@ weather_df %>%
 ```
 
 Viridis works great for people even if they have color blindness
+
+
+## Themes
+
+```{r}
+ggplot_weather +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+Also, theme_bw, theme_classic, etc. 
+Recognize that order of the theme commands matter -- putting legend.position before theme_minimal removes the position of the legend that you just fixed
+
+
+## Setting Options
+First code chunk of any markdown document has extra lines that details what the plots should look like. This is an example (what Jeff does):
+
+```{r, eval = FALSE}
+library(tidyverse)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+
