@@ -220,3 +220,113 @@ weather_df %>%
     ##            name cold not_cold
     ##  CentralPark_NY   44      321
     ##    Waterhole_WA  172      193
+
+## General summaries
+
+``` r
+weather_df %>% 
+  group_by(name, month) %>% 
+  summarize(
+    n_obs = n(),
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    sd_prcp = sd(prcp),
+    median_tmax = median(tmax, na.rm = TRUE)
+  )
+```
+
+    ## `summarise()` has grouped output by 'name'. You can override using the
+    ## `.groups` argument.
+
+    ## # A tibble: 36 × 6
+    ## # Groups:   name [3]
+    ##    name           month      n_obs mean_tmax sd_prcp median_tmax
+    ##    <chr>          <date>     <int>     <dbl>   <dbl>       <dbl>
+    ##  1 CentralPark_NY 2017-01-01    31      5.98    79.0         6.1
+    ##  2 CentralPark_NY 2017-02-01    28      9.28    63.9         8.3
+    ##  3 CentralPark_NY 2017-03-01    31      8.22   114.          8.3
+    ##  4 CentralPark_NY 2017-04-01    30     18.3     74.7        18.3
+    ##  5 CentralPark_NY 2017-05-01    31     20.1    155.         19.4
+    ##  6 CentralPark_NY 2017-06-01    30     26.3    103.         27.2
+    ##  7 CentralPark_NY 2017-07-01    31     28.7     91.0        29.4
+    ##  8 CentralPark_NY 2017-08-01    31     27.2     56.9        27.2
+    ##  9 CentralPark_NY 2017-09-01    30     25.4     45.4        26.1
+    ## 10 CentralPark_NY 2017-10-01    31     21.8    138.         22.2
+    ## # … with 26 more rows
+
+Summary in more compact way – do it `across` variables
+
+``` r
+weather_df %>% 
+  group_by(name, month) %>% 
+  summarize(across(prcp:tmin, mean))
+```
+
+    ## `summarise()` has grouped output by 'name'. You can override using the
+    ## `.groups` argument.
+
+    ## # A tibble: 36 × 5
+    ## # Groups:   name [3]
+    ##    name           month       prcp  tmax   tmin
+    ##    <chr>          <date>     <dbl> <dbl>  <dbl>
+    ##  1 CentralPark_NY 2017-01-01  39.5  5.98  0.748
+    ##  2 CentralPark_NY 2017-02-01  22.5  9.28  1.45 
+    ##  3 CentralPark_NY 2017-03-01  43.0  8.22 -0.177
+    ##  4 CentralPark_NY 2017-04-01  32.5 18.3   9.66 
+    ##  5 CentralPark_NY 2017-05-01  52.3 20.1  12.2  
+    ##  6 CentralPark_NY 2017-06-01  40.4 26.3  18.2  
+    ##  7 CentralPark_NY 2017-07-01  34.3 28.7  21.0  
+    ##  8 CentralPark_NY 2017-08-01  27.4 27.2  19.5  
+    ##  9 CentralPark_NY 2017-09-01  17.0 25.4  17.4  
+    ## 10 CentralPark_NY 2017-10-01  34.3 21.8  13.9  
+    ## # … with 26 more rows
+
+This is a dataframe!! You can use this to plot…
+
+``` r
+weather_df %>% 
+  group_by(name, month) %>% 
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE)
+  ) %>% 
+  ggplot(aes(x = month, y = mean_tmax, color = name)) +
+  geom_point() +
+  geom_path()
+```
+
+    ## `summarise()` has grouped output by 'name'. You can override using the
+    ## `.groups` argument.
+
+![](numeric_eda_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+``` r
+weather_df %>% 
+  group_by(name, month) %>% 
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE)
+  ) %>% 
+  pivot_wider(
+    names_from = name,
+    values_from = mean_tmax
+  ) %>% 
+  knitr::kable(digit = 2)
+```
+
+    ## `summarise()` has grouped output by 'name'. You can override using the
+    ## `.groups` argument.
+
+| month      | CentralPark_NY | Waikiki_HA | Waterhole_WA |
+|:-----------|---------------:|-----------:|-------------:|
+| 2017-01-01 |           5.98 |      27.76 |        -1.40 |
+| 2017-02-01 |           9.28 |      27.22 |        -0.02 |
+| 2017-03-01 |           8.22 |      29.08 |         1.67 |
+| 2017-04-01 |          18.27 |      29.71 |         3.87 |
+| 2017-05-01 |          20.09 |      30.11 |        10.10 |
+| 2017-06-01 |          26.26 |      31.31 |        12.87 |
+| 2017-07-01 |          28.74 |      31.76 |        16.33 |
+| 2017-08-01 |          27.19 |      32.02 |        19.65 |
+| 2017-09-01 |          25.43 |      31.74 |        14.16 |
+| 2017-10-01 |          21.79 |      30.29 |         8.31 |
+| 2017-11-01 |          12.29 |      28.38 |         1.38 |
+| 2017-12-01 |           4.47 |      26.46 |         2.21 |
+
+Renders a formatted table for markdown document
