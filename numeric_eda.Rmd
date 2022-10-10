@@ -33,3 +33,92 @@ weather_df <-
 
 Floor_date where unit = month -->  rounds to the bottom of the month
 
+
+## `group_by()`
+
+```{r}
+weather_df %>% 
+  group_by(name, month)
+```
+
+
+## `summarize()`
+
+let's group and then summarize!
+
+```{r}
+weather_df %>% 
+  group_by(name, month) %>% 
+  summarize(
+    n_obs = n()
+  )
+```
+
+
+can we count in other ways?
+
+```{r}
+weather_df %>% 
+  count(name, month)
+```
+
+
+don't use `table()` -- it's not a dataframe. If you like this, don't. You can't do anything with it.
+
+```{r, eval = FALSE}
+weather_df %>% 
+  pull(month) %>% 
+  table()
+```
+
+
+you can have multiple summaries
+
+```{r}
+weather_df %>% 
+  group_by(month) %>% 
+  summarize(
+    n_obs = n(),
+    n_dist = n_distinct(date)
+  )
+```
+
+
+## a brief aside on 2x2 tables
+
+```{r}
+weather_df %>% 
+  mutate(
+    cold = case_when(
+      tmax <  5 ~ "cold",
+      tmax >= 5 ~ "not_cold",
+      TRUE      ~ ""
+  )) %>% 
+  filter(name != "Waikiki_HA") %>% 
+  group_by(name, cold) %>% 
+  summarize(
+    n_obs = n()
+  ) %>% 
+  pivot_wider(
+    names_from = cold,
+    values_from = n_obs
+  )
+```
+
+
+quicker and easier way to generate a 2x2 table: 
+
+```{r}
+weather_df %>% 
+  mutate(
+    cold = case_when(
+      tmax <  5 ~ "cold",
+      tmax >= 5 ~ "not_cold",
+      TRUE      ~ ""
+  )) %>% 
+  filter(name != "Waikiki_HA") %>% 
+  janitor::tabyl(name, cold)
+```
+
+
+
